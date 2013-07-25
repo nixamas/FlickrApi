@@ -13,7 +13,6 @@ import com.google.gson.Gson;
 public class FlickrApiManager {
 	private static String _key = "2c7faae2991f6c6e1e13b66b5e3e986f";
 	private static String _secret = "92310c198c399488";
-//	private static String _url = "http://ycpi.api.flickr.com/services/rest/?method=flickr.test.echo&name=value&format=json&api_key=2c7faae2991f6c6e1e13b66b5e3e986f";
 	
 	public static String getPhotoUrl(JsonResponse.photos.Photo pp){
 		String url = "http://farm"+pp.getFarm()+".static.flickr.com/"+pp.getServer()+"/"+pp.getId()+"_"+pp.getSecret()+"_m.jpg";
@@ -31,6 +30,12 @@ public class FlickrApiManager {
 		perfRequest(getUrl());
 	}
 	
+	/**
+	 * Get Image from the Url and save to directory
+	 * @param photoUrl
+	 * @param idx
+	 * @return byte[] (image)
+	 */
 	public static byte[] getPhoto(String photoUrl, int idx){
 		byte[] bytes = null;
 		HttpURLConnection conn = null;
@@ -38,14 +43,12 @@ public class FlickrApiManager {
 		
 		try{
 			//***********************************************
-			url = new URL( photoUrl );
-			print("URL ::: ");
-			print(url);
+			url = new URL( photoUrl );//creatte url
 			//Set up the initial connection
 			conn = (HttpURLConnection)url.openConnection();
 			conn.setRequestMethod("GET");
-			conn.setDoOutput(true);
-			conn.setReadTimeout(10000);
+			conn.setDoOutput(true);	//we are using conn to get input stream
+			conn.setReadTimeout(10000);	//set timeout to 10 sec
 	                    
 			conn.connect();
 			
@@ -56,15 +59,14 @@ public class FlickrApiManager {
 			OutputStream outputStream = new FileOutputStream(new File("testImage-" + idx + ".jpg"));
 	 
 			int read = 0;
-			bytes = new byte[1024];
+			bytes = new byte[1024];		//TODO: may need to change size
 	 
 			while ((read = inputStream.read(bytes)) != -1) {
-				outputStream.write(bytes, 0, read);
+				outputStream.write(bytes, 0, read);		//save file to directory
 			}
 			//BitmapFactory.decodeByteArray(imageData, 0, imageData.length);		:TODO
 	       
 	        //***********************************************
-			
 	        print("done");
 		}catch(Exception e){
 			e.printStackTrace();
@@ -76,6 +78,11 @@ public class FlickrApiManager {
 		return bytes;
 	}
 	
+	/**
+	 * Perform GET request to flickr api server for query information
+	 * @param urlInput
+	 * @return JsonResponse
+	 */
 	public static JsonResponse perfRequest(String urlInput){
 		HttpURLConnection conn = null;
 		BufferedReader br = null;
@@ -99,38 +106,18 @@ public class FlickrApiManager {
 			
 			//read the result from the server
 	        br  = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-	        print("stringbuilder :: ");
-	        print(br.toString());
 	        sb = new StringBuilder();
-	        String s = br.toString();
 	        while ((line = br.readLine()) != null){
 	        	print(line);
 	        	sb.append(line);
 	        }
 	        //***********************************************
 			
-//	        String json_string = "{\"photos\":{\"page\":1, \"pages\":1881, \"perpage\":100, \"total\":\"188066\", \"photo\":[{\"id\":\"9359742195\", \"owner\":\"97295295@N07\", \"secret\":\"9a956743d7\"}]}}";
 	        Gson gson = new Gson();
-//	        JsonResponse test = new JsonResponse();
-//	        JsonResponse.photos p = test.new photos();
-//	        p.setPage(5);
-//	        p.setPages(45);
-//	        p.setTotal(3334);
-//	        JsonResponse.photos.Photo pp = p.new Photo();
-//	        pp.setId("sdfdsfg");
-//	        ArrayList<JsonResponse.photos.Photo> arrlist = new ArrayList<JsonResponse.photos.Photo>();
-//	        arrlist.add(pp);
-//	        p.setPhoto(arrlist);
-//	        test.set_photos(p);
-	        
-//	        String jsonOut = gson.toJson(test);
-	        
-	        s = sb.toString().trim().substring(0, sb.toString().length()).replace("jsonFlickrApi(", "");
+	        String s = sb.toString().trim().substring(0, sb.toString().length()).replace("jsonFlickrApi(", "");
 	        jsonResponse = gson.fromJson(s, JsonResponse.class);
 
 	        print("done");
-	        
-//	        System.out.println(sb.toString());
 		}catch(Exception e){
 			e.printStackTrace();
 		}finally{
@@ -141,19 +128,19 @@ public class FlickrApiManager {
 		return jsonResponse;
 	}
 	
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		print("FlickrApiManager");
-		print("performing jdohs request...");
-		JsonResponse jResponse = perfRequest( getUrl("random","cars","all") );
-		
-		for ( int i = 0 ; i < 5; i++){
-			byte[] firstphoto = getPhoto( getPhotoUrl(jResponse.getPhotoAtIdx(i)), i );
-		}
-	}
+//	/**
+//	 * @param args
+//	 */
+//	public static void main(String[] args) {
+//		// TODO Auto-generated method stub
+//		print("FlickrApiManager");
+//		print("performing jdohs request...");
+//		JsonResponse jResponse = perfRequest( getUrl("random","cars","all") );
+//		
+//		for ( int i = 0 ; i < 5; i++){
+//			byte[] firstphoto = getPhoto( getPhotoUrl(jResponse.getPhotoAtIdx(i)), i );
+//		}
+//	}
 
 	private static void print(Object out){
 		if(out != null){
